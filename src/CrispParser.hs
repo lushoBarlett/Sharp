@@ -131,10 +131,8 @@ parseSection = applyAny
 
 parseRegister :: Parser String
 parseRegister = applyAny
-  [ parseKeyword "$a"
-  , parseKeyword "$b"
-  , parseKeyword "$c"
-  , parseKeyword "$d"
+  [ parseKeyword "$flags"
+  , parseKeyword "$bp"
   , parseKeyword "$sp"
   , parseKeyword "$ip"
   ]
