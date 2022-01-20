@@ -6,10 +6,13 @@ SRC   := src
 ODIR  := $(BUILD)
 HIDIR := $(BUILD)
 
-CRISP := crisp
+SHARP := sharp
 
-$(CRISP): $(SRC)/Main.hs
-	ghc --make Main -i$(SRC) -odir $(ODIR) -hidir $(HIDIR) -o $(BIN)/$(CRISP)
+$(SHARP): $(SRC)/Main.hs
+	@mkdir -p $(ODIR)
+	@mkdir -p $(HIDIR)
+	@mkdir -p $(BIN)
+	ghc --make Main -i$(SRC) -odir $(ODIR) -hidir $(HIDIR) -o $(BIN)/$(SHARP)
 
 .PHONY: Main.hs
 $(SRC)/Main.hs:
@@ -17,3 +20,4 @@ $(SRC)/Main.hs:
 .PHONY: clean
 clean:
 	rm -r $(BUILD)
+	rm -r $(BIN)
