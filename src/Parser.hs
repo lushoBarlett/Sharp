@@ -1,7 +1,8 @@
 module Parser where
 
-import Data.Char ( isAlpha, isAlphaNum )
-import Control.Applicative ( Applicative(liftA2), Alternative(many, empty, (<|>)) )
+import Data.Char ( isDigit, isAlpha, isAlphaNum )
+import Control.Applicative ( Applicative(liftA2), Alternative(some, many, empty, (<|>)) )
+import AST ( Identifier (..), Type (..), AST(..) )
 
 newtype Parser a = Parser
   { runParser :: String -> Maybe (String, a)
@@ -58,14 +59,35 @@ parseAlpha = validateWith isAlpha consumeChar
 parseAlphaNum :: Parser Char
 parseAlphaNum = validateWith isAlphaNum consumeChar
 
+parseDigit :: Parser Char
+parseDigit = validateWith isDigit consumeChar
+
 parseUnderscore :: Parser Char
 parseUnderscore = parseChar '_'
 
 insertInto :: Parser a -> Parser [a] -> Parser [a]
 insertInto = liftA2 (:)
 
-parseIdentifier :: Parser String
-parseIdentifier = insertInto parseFirstIdentifierChar $ many parseRestIdentifierChar
+parseIdentifierString :: Parser String
+parseIdentifierString = insertInto parseFirstIdentifierChar (many parseRestIdentifierChar)
   where
     parseFirstIdentifierChar = parseAlpha <|> parseUnderscore
     parseRestIdentifierChar = parseAlphaNum <|> parseUnderscore
+
+parseIdentifier :: Parser Identifier
+parseIdentifier = Identifier <$> parseIdentifierString
+
+parseType :: Parser Type
+parseType = Type <$> parseIdentifierString
+
+parseColon :: Parser Char
+parseColon = parseChar ':'
+
+parseAssign :: Parser Char
+parseAssign = parseChar '='
+
+parseIntLiteral :: Parser AST
+parseIntLiteral = IntLiteral . read <$> some parseDigit
+
+parseDeclaration :: Parser AST
+parseDeclaration = Declaration <$> parseIdentifier <*> (parseColon *> parseType) <*> (parseAssign *> parseIntLiteral)
