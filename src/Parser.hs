@@ -1,6 +1,6 @@
 module Parser where
 
-import Data.Char ( isDigit, isAlpha, isAlphaNum )
+import Data.Char ( isSpace, isDigit, isAlpha, isAlphaNum )
 import Control.Applicative ( Applicative(liftA2), Alternative(some, many, empty, (<|>)) )
 import AST ( Identifier (..), Type (..), AST(..) )
 
@@ -62,6 +62,15 @@ parseAlphaNum = validateWith isAlphaNum consumeChar
 parseDigit :: Parser Char
 parseDigit = validateWith isDigit consumeChar
 
+parseSpace :: Parser Char
+parseSpace = validateWith isSpace consumeChar
+
+parseWS :: Parser ()
+parseWS = () <$ many parseSpace
+
+withSpaces :: Parser a -> Parser a
+withSpaces = (parseWS *>)
+
 parseUnderscore :: Parser Char
 parseUnderscore = parseChar '_'
 
@@ -83,11 +92,15 @@ parseType = Type <$> parseIdentifierString
 parseColon :: Parser Char
 parseColon = parseChar ':'
 
-parseAssign :: Parser Char
-parseAssign = parseChar '='
+parseEquals :: Parser Char
+parseEquals = parseChar '='
 
 parseIntLiteral :: Parser AST
 parseIntLiteral = IntLiteral . read <$> some parseDigit
 
 parseDeclaration :: Parser AST
-parseDeclaration = Declaration <$> parseIdentifier <*> (parseColon *> parseType) <*> (parseAssign *> parseIntLiteral)
+parseDeclaration = Declaration <$> pIdentifier <*> pType <*> pValue
+  where
+    pIdentifier = withSpaces parseIdentifier
+    pType       = withSpaces parseColon *> withSpaces parseType
+    pValue      = withSpaces parseEquals *> withSpaces parseIntLiteral
