@@ -126,6 +126,9 @@ parseBlock = Block <$> pBlock
 parseDeclaration :: Parser AST
 parseDeclaration = Declaration <$> pIdentifier <*> pType <*> pValue
 
+parseValue :: Parser AST
+parseValue = parseIntLiteral <|> parseFunctionLiteral
+
 {- Helpers -}
 
 ws :: Parser a -> Parser a
@@ -133,6 +136,6 @@ ws = (parseWS *>)
 
 pIdentifier = ws parseIdentifier
 pType       = ws parseColon *> ws parseType
-pValue      = ws parseEquals *> ws parseIntLiteral
+pValue      = ws parseEquals *> ws parseValue
 pArguments  = ws parseParenOpen *> separatedBy parseComma (ws parseArgument) <* ws parseParenClose
 pBlock      = ws parseBraceOpen *> many (ws parseDeclaration) <* ws parseBraceClose
