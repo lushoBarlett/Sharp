@@ -68,14 +68,14 @@ parseSpace = validateWith isSpace consumeChar
 parseWS :: Parser ()
 parseWS = () <$ many parseSpace
 
-withSpaces :: Parser a -> Parser a
-withSpaces = (parseWS *>)
-
 parseUnderscore :: Parser Char
 parseUnderscore = parseChar '_'
 
-insertInto :: Parser a -> Parser [a] -> Parser [a]
+insertInto :: Applicative f => f a -> f [a] -> f [a]
 insertInto = liftA2 (:)
+
+separatedBy :: Alternative f => f b -> f a -> f [a]
+separatedBy separator parser = insertInto parser $ many (separator *> parser)
 
 parseIdentifierString :: Parser String
 parseIdentifierString = insertInto parseFirstIdentifierChar (many parseRestIdentifierChar)
@@ -95,12 +95,43 @@ parseColon = parseChar ':'
 parseEquals :: Parser Char
 parseEquals = parseChar '='
 
+parseParenOpen :: Parser Char
+parseParenOpen = parseChar '('
+
+parseParenClose :: Parser Char
+parseParenClose = parseChar ')'
+
+parseComma :: Parser Char
+parseComma = parseChar ','
+
+parseBraceOpen :: Parser Char
+parseBraceOpen = parseChar '{'
+
+parseBraceClose :: Parser Char
+parseBraceClose = parseChar '}'
+
 parseIntLiteral :: Parser AST
 parseIntLiteral = IntLiteral . read <$> some parseDigit
 
+parseArgument :: Parser AST
+parseArgument = Argument <$> pIdentifier <*> pType
+
+parseFunctionLiteral :: Parser AST
+parseFunctionLiteral = FunctionLiteral <$> pArguments <*> parseBlock
+
+parseBlock :: Parser AST
+parseBlock = Block <$> pBlock
+
 parseDeclaration :: Parser AST
 parseDeclaration = Declaration <$> pIdentifier <*> pType <*> pValue
-  where
-    pIdentifier = withSpaces parseIdentifier
-    pType       = withSpaces parseColon *> withSpaces parseType
-    pValue      = withSpaces parseEquals *> withSpaces parseIntLiteral
+
+{- Helpers -}
+
+ws :: Parser a -> Parser a
+ws = (parseWS *>)
+
+pIdentifier = ws parseIdentifier
+pType       = ws parseColon *> ws parseType
+pValue      = ws parseEquals *> ws parseIntLiteral
+pArguments  = ws parseParenOpen *> separatedBy parseComma (ws parseArgument) <* ws parseParenClose
+pBlock      = ws parseBraceOpen *> many (ws parseDeclaration) <* ws parseBraceClose

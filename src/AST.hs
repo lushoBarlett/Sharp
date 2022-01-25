@@ -6,6 +6,8 @@ newtype Identifier = Identifier String
 newtype Type = Type String
   deriving (Eq, Show)
 
+type Arguments = []
+
 data AST
 
   = Declaration
@@ -14,5 +16,18 @@ data AST
     , valueOf :: AST
     }
 
+  | Argument
+    { identifierOf :: Identifier
+    , typeOf :: Type
+    }
+
   | IntLiteral Int
+
+  | FunctionLiteral
+    { argumentsOf :: [AST]
+    , bodyOf :: AST
+    }
+
+  | Block [AST]
+  
   deriving (Eq, Show)
