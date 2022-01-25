@@ -71,14 +71,15 @@ parseWS = () <$ many parseSpace
 parseUnderscore :: Parser Char
 parseUnderscore = parseChar '_'
 
-insertInto :: Applicative f => f a -> f [a] -> f [a]
-insertInto = liftA2 (:)
+prependedWith :: Applicative f => f a -> f [a] -> f [a]
+prependedWith = liftA2 (:)
 
 separatedBy :: Alternative f => f b -> f a -> f [a]
-separatedBy separator parser = insertInto parser $ many (separator *> parser)
+separatedBy separator parser = pure [] <|> prependedWith parser separated
+  where separated = many $ separator *> parser
 
 parseIdentifierString :: Parser String
-parseIdentifierString = insertInto parseFirstIdentifierChar (many parseRestIdentifierChar)
+parseIdentifierString = prependedWith parseFirstIdentifierChar (many parseRestIdentifierChar)
   where
     parseFirstIdentifierChar = parseAlpha <|> parseUnderscore
     parseRestIdentifierChar = parseAlphaNum <|> parseUnderscore
