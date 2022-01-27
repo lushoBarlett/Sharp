@@ -6,8 +6,6 @@ newtype Identifier = Identifier String
 newtype Type = Type String
   deriving (Eq, Show)
 
-type Arguments = []
-
 data AST
 
   = Declaration
