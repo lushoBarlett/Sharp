@@ -1,10 +1,10 @@
 module AST where
 
 newtype Identifier = Identifier String
-  deriving (Eq, Show)
+  deriving (Eq, Show, Ord)
 
 newtype Type = Type String
-  deriving (Eq, Show)
+  deriving (Eq, Show, Ord)
 
 data AST
 
@@ -24,6 +24,11 @@ data AST
   | FunctionLiteral
     { argumentsOf :: [AST]
     , bodyOf :: AST
+    }
+
+  | FunctionCall
+    { functionOf :: AST
+    , parametersOf :: [AST]
     }
 
   | Block [AST]

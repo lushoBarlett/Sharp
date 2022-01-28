@@ -129,6 +129,9 @@ parseDeclaration = Declaration <$> pIdentifier <*> pType <*> pValue
 parseValue :: Parser AST
 parseValue = parseIntLiteral <|> parseFunctionLiteral
 
+parseTopLevel :: Parser [AST]
+parseTopLevel = many parseDeclaration
+
 {- Helpers -}
 
 ws :: Parser a -> Parser a
